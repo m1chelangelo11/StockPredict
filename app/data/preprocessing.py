@@ -47,7 +47,7 @@ def create_target_variable(
 
 
 def prepare_training_data(
-    df: pd.DataFrame, target_column: str = "Target", test_size: float = 0.2
+    df: pd.DataFrame, target_column: str = "Target", test_size: float = 0.2, validation_size: float = 0.2
 ) -> tuple:
     """
     Funkcja dzieli ramkę na zbiory: treningowy, walidacyjny i testowy, zachowując chronologiczny
@@ -58,6 +58,8 @@ def prepare_training_data(
         target_column: nazwa kolumny docelowej (domyślnie Target, która zawiera wartości
         do przewidywania)
         test_size: Proporcja danych przeznaczona na zbiór testowy (wartość od 0 do 1),
+        domyślnie 0.2, czyli 20%
+        validation_size: Proporcja danych przeznaczona na zbiór testowy (od 0 do 1),
         domyślnie 0.2, czyli 20%
 
     Zwraca:
@@ -74,7 +76,7 @@ def prepare_training_data(
     df_prep = df.copy()
 
     n_test = int(len(df_prep) * test_size)
-    n_val = int((len(df_prep) - n_test) * 0.2)
+    n_val = int((len(df_prep) - n_test) * validation_size)
     n_train = len(df_prep) - n_test - n_val
 
     train_df = df_prep.iloc[:n_train]

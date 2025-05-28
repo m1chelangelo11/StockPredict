@@ -18,8 +18,6 @@ from preprocessing import (
 from config import (
     DATA_DIR,
     PREPROCESSING_DEFAULTS,
-    TECHNICAL_INDICATORS_CONFIG,
-    REQUIRED_COLUMNS,
 )
 
 # Konfiguracja logowania
@@ -71,7 +69,11 @@ def data_pipeline(
         f"Usunięto brakujące dane po obliczeniu cech i wskaźników technicznych dla {ticker}"
     )
 
-    df_target = create_target_variable(df_clean_tech_feat)
+    df_target = create_target_variable(
+        df_clean_tech_feat,
+        prediction_horizon=PREPROCESSING_DEFAULTS["PREDICTION_HORIZON"],
+        target_type=PREPROCESSING_DEFAULTS["TARGET_TYPE"],
+    )
     logger.info(f"Utworzono zmienną docelową dla {ticker}")
 
     df_clean_target = clean_missing_data(df_target)
@@ -79,7 +81,11 @@ def data_pipeline(
         f"Usunięto brakujące dane po utworzeniu zmiennej docelowej dla {ticker}"
     )
 
-    train_df, val_df, test_df = prepare_training_data(df_clean_target)
+    train_df, val_df, test_df = prepare_training_data(
+        df_clean_target,
+        test_size=PREPROCESSING_DEFAULTS["TEST_SIZE"],
+        validation_size=PREPROCESSING_DEFAULTS["VALIDATION_SIZE"],
+    )
     logger.info(
         f"Podzielono dane na zbiory treningowy, walidacyjny i testowy dla {ticker}"
     )
@@ -88,7 +94,11 @@ def data_pipeline(
     val_df.set_index("Date", inplace=True)
     test_df.set_index("Date", inplace=True)
 
-    scaled_train_df, scaler_train = scale_features(train_df, exclude_columns=["Target"])
+    scaled_train_df, scaler_train = scale_features(
+        train_df,
+        exclude_columns=["Target"],
+        method=PREPROCESSING_DEFAULTS["SCALING_METHOD"],
+    )
     logger.info(f"Przeskalowano zbiory treningowe dla {ticker}")
     scaled_val_array = scaler_train.transform(val_df.drop(columns=["Target"]))
     scaled_test_array = scaler_train.transform(test_df.drop(columns=["Target"]))
@@ -142,4 +152,4 @@ def data_pipeline(
     return (X_train, X_val, X_test, y_train, y_val, y_test)
 
 
-data_pipeline("AAPL", "2020-01-01", "2023-10-01")  # Przykładowe wywołanie funkcji
+# data_pipeline("AAPL", "2020-01-01", "2023-10-01")  # Przykładowe wywołanie funkcji
