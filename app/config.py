@@ -3,6 +3,8 @@ import os
 # Ścieżka do głównego folderu data/
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
+os.makedirs(DATA_DIR, exist_ok=True)
+
 REQUIRED_COLUMNS = ["Open", "High", "Low", "Close", "Volume"]
 
 # Konfiguracja wskaźników technicznych
