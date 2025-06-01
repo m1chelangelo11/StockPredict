@@ -3,13 +3,16 @@ import pandas as pd
 import numpy as np
 import logging
 import os
-from clear_and_calc import (
+import sys
+sys.path.insert(0, os.path.abspath('.'))
+
+from app.data.clear_and_calc import (
     clean_missing_data,
     calculate_price_features,
     calculate_technical_indicators,
 )
-from loader import download_data, load_local_csv, save_data, update_stock_data
-from preprocessing import (
+from app.data.loader import download_data, load_local_csv, save_data, update_stock_data
+from app.data.preprocessing import (
     create_target_variable,
     scale_features,
     create_sequences,
