@@ -12,8 +12,8 @@ class modelDoPredykcji(nn.Module):
         self.num_layers = num_layers
         self.hidden_dim = hidden_dim
 
-        self.lstm = nn.LSTM(input_dim, hidden_dim, num_layers, batch_first=True,dropout=0.2)
-        self.fc = nn.Linear(hidden_dim, output_dim)
+        self.lstm = nn.LSTM(input_dim, hidden_dim, num_layers, batch_first=True,dropout=0.2,dtype=torch.float64)
+        self.fc = nn.Linear(hidden_dim, output_dim, dtype=torch.float64)
 
         self.to(self.device)
 
