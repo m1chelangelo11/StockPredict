@@ -133,7 +133,8 @@ def scale_features(
     scaled_data = scaler.transform(df_scale[numeric_col])
     scaled_df = pd.DataFrame(scaled_data, columns=numeric_col, index=df_scale.index)
     for col in exclude_columns:
-        scaled_df[col] = df_scale[col]
+        if col in df_scale:
+            scaled_df[col] = df_scale[col]
     logger.info(f"Przeskalowano {len(numeric_col)} kolumn metodą {method}")
 
     return (scaled_df, scaler)
