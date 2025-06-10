@@ -25,7 +25,7 @@ num_layers = 2
 output_dim = 1
 model = modelDoPredykcji(input_dim, hidden_dim, num_layers, output_dim)
 lr = 0.001
-num_epochs = 200
+num_epochs = 100
 # ustawiamy learning rate i ilosc epok
 trainer = trainModel(lr, num_epochs)
 trainer.setModel(model)

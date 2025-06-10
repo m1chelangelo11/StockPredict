@@ -12,9 +12,11 @@ from sklearn.metrics import (
     mean_absolute_percentage_error,
 )
 import numpy as np
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 from app.config import MODEL_DIR, DATA_DIR
-
+import webbrowser
+from datetime import datetime
 
 class trainModel:
     def __init__(self, lr=0.001, num_epochs=200, device=None):
@@ -139,30 +141,95 @@ class trainModel:
         return rmse, mae, mape
 
     def display(self, y_test, y_test_pred, test_rmse, test_mae, test_mape):
-        # Konwertuj tensory na numpy dla matplotlib
+        # Konwertuj tensory na numpy
         if isinstance(y_test, torch.Tensor):
             y_test = self.scaler_y.inverse_transform(y_test.cpu().numpy())
 
-        fig = plt.figure(figsize=(10, 8))
-        gs = fig.add_gridspec(4, 1)
-        ax1 = fig.add_subplot(gs[:3, 0])
-        ax1.plot(y_test, color="blue", label="Rzeczywista cena")
-        ax1.plot(y_test_pred, color="green", label="Predykcja ceny")
-        ax1.legend()
-        plt.title(" Stock price prediction ")
-        plt.xlabel("Data")
-        plt.ylabel("Cena")
-        ax2 = fig.add_subplot(gs[3, 0])
-        ax2.axhline(test_rmse, color="blue", linestyle="--", label="RMSE")
-        ax2.axhline(test_mae, color="green", linestyle="--", label="MAE")
-        ax2.axhline(test_mape, color="purple", linestyle="--", label="MAPE")
-        ax2.plot(abs(y_test - y_test_pred), "r", label=" blad predykcji")
-        ax2.legend()
-        plt.title("blad predykcji")
-        plt.xlabel("Data")
-        plt.ylabel("Error")
-        plt.tight_layout()
-        plt.show()
+        # Stwórz subplot z 2 wykresami
+        fig = make_subplots(
+            rows=2, cols=1, row_heights=[0.7, 0.3], vertical_spacing=0.1
+        )
+
+        # Główny wykres predykcji
+        fig.add_trace(
+            go.Scatter(
+                y=y_test.flatten(),
+                name="Rzeczywista cena",
+                line=dict(color="blue", width=2),
+            ),
+            row=1,
+            col=1,
+        )
+        fig.add_trace(
+            go.Scatter(
+                y=y_test_pred.flatten(),
+                name="Predykcja",
+                line=dict(color="red", width=2),
+            ),
+            row=1,
+            col=1,
+        )
+
+        # Wykres błędów
+        errors = abs(y_test.flatten() - y_test_pred.flatten())
+        x_range = list(range(len(errors)))
+
+        fig.add_trace(
+            go.Scatter(
+                y=errors,
+                name="Błąd predykcji",
+                line=dict(color="orange"),
+                fill="tozeroy",
+            ),
+            row=2,
+            col=1,
+        )
+
+        # Linie metryk
+        for metric, value, color in [
+            ("RMSE", test_rmse, "blue"),
+            ("MAE", test_mae, "green"),
+            ("MAPE", test_mape, "purple"),
+        ]:
+            fig.add_trace(
+                go.Scatter(
+                    x=x_range,
+                    y=[value] * len(x_range),
+                    name=f"{metric}: {value:.2f}",
+                    line=dict(color=color, dash="dash"),
+                ),
+                row=2,
+                col=1,
+            )
+
+        # Layout
+        fig.update_layout(
+            title="📈 Stock Price Prediction",
+            height=600,
+            template="plotly_white",
+            xaxis_title="Data",
+            yaxis_title="Cena",
+            xaxis2_title="Data",
+            yaxis2_title="Error",
+        )
+        
+        plots_dir = os.path.join("data", "Plots")
+        os.makedirs(plots_dir, exist_ok=True)
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"stock_prediction_{timestamp}.html"
+        filepath = os.path.join(plots_dir, filename)
+    
+        fig.write_html(filepath)
+    
+        try:
+            webbrowser.open("file://" + os.path.realpath(filepath))
+        except:
+            print(
+                f"Nie można otworzyć pliku {filepath} w przeglądarce. Proszę otworzyć go ręcznie."
+            )
+
+        return fig
 
     def save_model(self, path="model.pt"):
         filepath = os.path.join(MODEL_DIR, path)
